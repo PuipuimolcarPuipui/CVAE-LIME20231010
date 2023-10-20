@@ -619,6 +619,7 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
     # 2. 特徴量のデータだけ取り出し
     data_only = [item[1] for item in sorted_features]
 
+    
     # 3. このデータを28x28の形状にreshape
     image_data1 = np.array(data_only).reshape(28, 28)
 
@@ -718,6 +719,9 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
         plt.savefig(f"save_data/MNIST_png/combined_GradCAM_and_IG_{auto_encoder}_{target_model}_{label}_{instance_no}.png", bbox_inches='tight', pad_inches=0)
         plt.close()
         
+        import math
+        return  sum(abs(x) for x in data_only), math.sqrt(sum(x**2 for x in data_only))
+
     else:
         # 2つの画像を読み込む
         img1 = Image.open(f"temp/exp_{auto_encoder}_{target_model}.png")
@@ -730,6 +734,50 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
 
         # 結合した画像を保存
         combined_img.save(f"save_data/MNIST_png/combined_{auto_encoder}_{target_model}_{label}_{instance_no}.png")
+        
+        import math
+        return  sum(abs(x) for x in data_only), math.sqrt(sum(x**2 for x in data_only))
 
 
+def tabel_exp_visualize(exp, exp_setting, total_feature_name):
+    import pandas as pd
+    import os
+    
+    # CSVファイルが存在するか確認し、存在しない場合は新しいファイルを作成します。
+    if not os.path.exists("save_data/visualize_table_exp/" + exp_setting + '.csv'):
+        columns = total_feature_name
+        df = pd.DataFrame(columns=columns)
+        df.to_csv(f"save_data/visualize_table_exp/{exp_setting}.csv", index=False)
+
+    # 各クラスの説明をデータフレームに追加します。
+    class_exp = list(exp.local_exp.values())[0]
+    data = {}
+    for feature_name in total_feature_name:
+        data[feature_name] = 0
+            
+    for feature, weight in class_exp:
+        feature_name = total_feature_name[feature]
+        data[feature_name] = weight
+
+    df = pd.DataFrame([data])
+    
+    # 結果をCSVファイルに追記します。
+    df.to_csv(f"save_data/visualize_table_exp/{exp_setting}.csv", mode='a', header=False, index=False)
+    
+    # L1,L2ノルムを計算
+    def calculate_norms(data):
+        l1_norm = 0
+        l2_norm = 0
+    
+        # 辞書の各バリューに対してノルムを計算
+        for key, value in data.items():
+            l1_norm += abs(value)  # L1ノルムの計算
+            l2_norm += value**2   # L2ノルムの計算（平方和）
+        
+        l2_norm = l2_norm**0.5  # L2ノルムの平方根を計算
+        
+        return l1_norm, l2_norm
+    
+    return calculate_norms(data)
+    
     
