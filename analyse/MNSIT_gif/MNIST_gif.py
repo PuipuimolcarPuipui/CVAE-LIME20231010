@@ -34,8 +34,8 @@ def create_gif_from_pngs(folder_path, keyword, output_gif_name, duration=2000):
 if __name__ == "__main__":
     folder = "MNIST_png"
     import itertools
-    p = itertools.product(['VAE','CVAE'], ['CNN'], range(10))
+    p = itertools.product(['VAE','CVAE'], ['NN','RF','SVM'], range(10))
     for AE, Clf, No in p:
-      keyword = f"GradCAM_and_IG_{AE}_{Clf}_{No}"
+      keyword = f"combined_{AE}_{Clf}_{No}"
       output_name = f"{AE}_{Clf}_{No}.gif"
       create_gif_from_pngs(folder, keyword, output_name)

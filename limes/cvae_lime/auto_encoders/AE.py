@@ -589,7 +589,10 @@ def AE_load(X_test=None,
             
     
     # labelsの1列目をheatmap用の色情報として取得
-    color_map = labels[:, 0]
+    if dataset == 'boston':
+        color_map = labels
+    else:
+        color_map = labels[:, 0]
 
     # プロット
     plt.scatter(latent_vectors[:, 0], latent_vectors[:, 1], c=color_map, label='Noisy Sample', s=2 * weights, cmap='viridis') # color_mapをc引数に追加

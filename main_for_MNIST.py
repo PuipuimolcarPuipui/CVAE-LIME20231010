@@ -15,8 +15,8 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
 DATA = 5 #int(sys.argv[1])
-AE = 1 #int(sys.argv[1])
-target = 3 #int(sys.argv[2])
+AE = int(sys.argv[1])
+target = 2 #int(sys.argv[2])
 
 ## 実験条件 
 dataset = ['breastcancer', 'wine', 'liver', 'adult', 'credit', 'MNIST'][DATA] #, 'boston', 'hepa'
@@ -143,9 +143,10 @@ def main(dataset,
                                     X_train = X_train,
                                     y_train = y_train,
                                     dataset_class_num = dataset_class_num)
+        original_model = None
 
     ## 実験結果格納用のCSVを定義
-    df = pd.DataFrame([['','','','','','','','','','','','','','','','']],
+    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','']],
                         columns=['dataset',
                                 'weighting_fn',
                                 'epoch_num',
@@ -161,8 +162,10 @@ def main(dataset,
                                 'element3',
                                 'process_time',
                                 'target_model',
-                                'local_output'])
-    output_path = 'save_data/test_result/turb_'+str(auto_encoder_sampling)+'_filter_'+str(label_filter)+'_'+str(dataset)+'_'+str(auto_encoder)+'_'+str(auto_encoder_latent_dim)+'_'+str(select_percent)+'_'+str(target_model)+'.csv'
+                                'local_output',
+                                'L1',
+                                'L2'])
+    output_path = 'save_data/test_result/turb_'+str(auto_encoder_sampling)+'_filter_'+str(label_filter)+'_'+str(dataset)+'_'+str(auto_encoder)+'_'+str(auto_encoder_latent_dim)+'_'+str(select_percent)+'_'+str(target_model)+'_main.csv'
     df.to_csv(output_path)
     
     # iAUC計算用
@@ -258,9 +261,9 @@ def main(dataset,
                                         num_features=784
                                         )
         
-        # 説明の可視化
+        # 説明の可視化とL1及びL2ノルムの獲得
         from functions import MNIST_exp
-        MNIST_exp(X_test.values[i], exp.local_exp, auto_encoder, target_model, i,y_test.values[i], X_train.values, original_model=original_model)
+        L1, L2 = MNIST_exp(X_test.values[i], exp.local_exp, auto_encoder, target_model, i,y_test.values[i], X_train.values, original_model=original_model)
         
         
         # 評価値の算出
@@ -292,8 +295,10 @@ def main(dataset,
                             label_filter,
                             process_time,
                             target_model,
-                            min(local_output)]],
-                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output'])
+                            min(local_output),
+                            L1,
+                            L2]],
+                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','L1','L2'])
         
         temp = temp.astype({col: 'int' for col in temp.columns if temp[col].dtype == 'bool'})
         df = pd.concat([df, temp], axis=0)
@@ -311,7 +316,7 @@ def main(dataset,
 
     if stability_check == True:
         # 実行の度の計算結果を格納
-        return exp.as_list(label=np.argmax(local_output)), score, mse, [np.argmax(local_output) if dataset_class_num[dataset]!='numerous' else local_output[0]], y_test.values[i]
+        return exp.as_list(label=np.argmax(local_output)), score, mse, [np.argmax(local_output) if dataset_class_num[dataset]!='numerous' else local_output[0]], y_test.values[i], L1, L2
     
     if iAUC_check == True:
         # オブジェクトをファイルに書き出す関数

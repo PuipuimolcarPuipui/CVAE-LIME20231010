@@ -14,12 +14,12 @@ warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
-DATA = 6 #int(sys.argv[1])
-target = 2 #int(sys.argv[1])
-AE = 0 #int(sys.argv[2])
+AE = 3#int(sys.argv[1])
+target = int(sys.argv[1])
+DATA = int(sys.argv[2])
 
 ## 実験条件 
-dataset = ['breastcancer','credit','adult','liver','wine','credit_one_hot','adult_one_hot'][DATA] #, 'boston', 'hepa'
+dataset = ['breastcancer','credit','wine','credit_one_hot','adult_one_hot','liver','boston','adult'][DATA] #, 'boston', 'hepa'
 dataset_class_num = {'breastcancer':2,
                     'hepa': 2,
                     'liver':2,
@@ -30,8 +30,8 @@ dataset_class_num = {'breastcancer':2,
                     'credit_one_hot':2,
                     'adult_one_hot':2}
 target_model = ['NN', 'RF', 'SVM'][target] #, 'NN', 'SVM', 'DNN', 'GBM', 'XGB'
-target_model_training =  True
-test_range = range(1)
+target_model_training =  False
+test_range = range(100)
 num_samples = 5000
 
 # 検証条件 
@@ -46,7 +46,7 @@ feature_selection = 'auto'
 model_regressor = None
 noise_std = 1 #1
 kernel_width = None #DAE,LIME用
-label_filter = True #False
+label_filter = False #False
 select_percent = 100 #100
 
 #検証内容
@@ -260,16 +260,23 @@ def main(dataset,
                             'exp':exp,
                             'model':model})
 
-    if stability_check == True:
-        # 実行の度の計算結果を格納
-        return exp.as_list(label=np.argmax(local_output)), score, mse, [np.argmax(local_output) if dataset_class_num[dataset]!='numerous' else local_output[0]], y_test.values[i]
+        
+        if iAUC_check == True:
+            # オブジェクトをファイルに書き出す関数
+            from functions import write_object_to_file
+            filename = str(dataset)+'_'+str(auto_encoder)
+            write_object_to_file(data_for_iAUC, 'save_data/test_iAUC/' + filename + '.dill')
+        
+        tabel_exp_visualizing = True
+        if tabel_exp_visualizing == True:
+            from functions import tabel_exp_visualize
+            name = 'turb_'+str(setting_dic['auto_encoder_sampling'])+'_filter_'+str(setting_dic['filtering'])+'_'+str(setting_dic['dataset'])+'_'+str(setting_dic['auto_encoder'])+'_'+str(setting_dic['latent_dim'])+'_'+str(setting_dic['select_percent'])+'_'+str(target_model)
+            L1, L2 = tabel_exp_visualize(exp,name,X_train.columns.tolist())
+            
+        if stability_check == True:
+            # 実行の度の計算結果を格納
+            return exp.as_list(label=np.argmax(local_output)), score, mse, [np.argmax(local_output) if dataset_class_num[dataset]!='numerous' else local_output[0]], y_test.values[i], L1, L2
     
-    if iAUC_check == True:
-        # オブジェクトをファイルに書き出す関数
-        from functions import write_object_to_file
-        filename = str(dataset)+'_'+str(auto_encoder)
-        write_object_to_file(data_for_iAUC, 'save_data/test_iAUC/' + filename + '.dill')
-
 if __name__ == '__main__':
     main(dataset,
         dataset_class_num,

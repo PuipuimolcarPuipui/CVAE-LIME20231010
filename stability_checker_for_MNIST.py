@@ -19,8 +19,8 @@ j = 5 #int(sys.argv[1]) ####
 k = int(sys.argv[2])
 
 ## 実験条件
-conditions = [[['CVAE'],[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0],[True], [True] ],
-              [['VAE'] ,[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0],[True], [True] ],
+conditions = [[['CVAE'],[1.0], [0],[True], [True] ],
+              [['VAE'] ,[1.0], [0],[True], [True] ],
               [['AE']  ,[0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],[True], [False]],
               [['LIME'],[0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],[False],[False]],
               ][i]
@@ -36,7 +36,7 @@ auto_encoder_sampling = conditions[4]
 ## 実験条件パターン
 dataset = [['breastcancer', 'liver', 'wine', 'credit', 'adult', 'MNIST'][j]] #'breastcancer', 'hepa', 'liver', 'wine', 'boston' ,'adult' , 'boston'
 dataset_class_num = {'adult': 2, 'wine': 6, 'boston':'numerous', 'mine': 5, 'hepa': 2, 'breastcancer':2, 'liver':2, 'credit':2, 'MNIST':10}
-target_model = [['NN', 'RF', 'SVM', 'DNN', 'GBM', 'XGB','CNN'][k]]
+target_model = [['NN', 'RF', 'SVM','CNN', 'DNN', 'GBM', 'XGB'][k]]
 target_model_training = False
 num_samples = 5000
 # test_range = range(40) 
@@ -86,7 +86,7 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
     
     for test_range in [[instance_no] for _ in range(repeat_num)]:
         try:
-            feature_list, score, mse, predict_label, label = main(
+            feature_list, score, mse, predict_label, label, L1, L2 = main(
                 dataset,
                 dataset_class_num,
                 target_model,
@@ -111,8 +111,8 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
     
             features_from_lime_runs.append([item[0] for item in feature_list])
             append_to_csv(f'save_data/test_stability/{dataset}{target_model}{auto_encoder_weighting}{auto_encoder_sampling}{auto_encoder}{instance_no}.csv',
-                      [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, None, score, mse, predict_label, label],
-                      ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'score', 'mse','predict_label','label'],
+                      [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, None, score, mse, predict_label, label, L1, L2],
+                      ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'score', 'mse','predict_label','label', 'L1', 'L2'],
                       )
         except Exception as e:
             print(f"Error occurred with dataset:{dataset} and target_model:{target_model}. Skipping. Error: {e}")
@@ -128,8 +128,8 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
         jaccard_values_mean = 0
     
     append_to_csv(f'save_data/test_stability/{dataset}{target_model}{auto_encoder_weighting}{auto_encoder_sampling}{auto_encoder}{instance_no}.csv',
-                [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, jaccard_values_mean, None, None, predict_label, label],
-                ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'R2', 'mse','predict_label','label'],
+                [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, jaccard_values_mean, None, None, predict_label, label, L1, L2],
+                ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'R2', 'mse','predict_label','label', 'L1', 'L2'],
                 )
 
 

@@ -3,4 +3,5 @@ save_data/target_model/MNIST_STANDERD/RF_MNIST.pkl
 save_data/auto_encoder_model/latent_space
 analyse/MNSIT_gif
 save_data/MNIST_png
-save_data/test_result
+save_data/test_samples
+save_data/test_samples_tsne
