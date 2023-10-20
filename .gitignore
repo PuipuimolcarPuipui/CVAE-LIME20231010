@@ -5,3 +5,5 @@ analyse/MNSIT_gif
 save_data/MNIST_png
 save_data/test_samples
 save_data/test_samples_tsne
+save_data/visualize_table_exp
+save_data/test_stability/test_stability
