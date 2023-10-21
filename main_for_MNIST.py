@@ -16,7 +16,7 @@ warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
 DATA = 5 #int(sys.argv[1])
 AE = int(sys.argv[1])
-target = 2 #int(sys.argv[2])
+target = 0 #int(sys.argv[2])
 
 ## 実験条件 
 dataset = ['breastcancer', 'wine', 'liver', 'adult', 'credit', 'MNIST'][DATA] #, 'boston', 'hepa'
@@ -37,9 +37,9 @@ num_samples = 5000
 auto_encoder = ['CVAE', 'VAE', 'AE', 'LIME', 'ICVAE', 'ICVAE2'][AE]
 auto_encoder_weighting = True
 auto_encoder_sampling = True
-auto_encoder_training = False
+auto_encoder_training = True
 auto_encoder_epochs = 100
-auto_encoder_latent_dim = 2
+auto_encoder_latent_dim = 10
 one_hot_encoding = False
 feature_selection = 'auto'
 model_regressor = None
@@ -57,6 +57,9 @@ reduce_percent = 0 #0
 
 # 標準化'Standard'　or 正規化'Minimax'
 preprocess = 'Minimax'
+
+#活性潜在変数か否かの分散ベクトルの閾値
+var_threshold = 0.5
 
 def main(dataset,
         dataset_class_num,
@@ -146,7 +149,7 @@ def main(dataset,
         original_model = None
 
     ## 実験結果格納用のCSVを定義
-    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','']],
+    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','','']],
                         columns=['dataset',
                                 'weighting_fn',
                                 'epoch_num',
@@ -164,7 +167,8 @@ def main(dataset,
                                 'target_model',
                                 'local_output',
                                 'L1',
-                                'L2'])
+                                'L2',
+                                'Active_latent_dim'])
     output_path = 'save_data/test_result/turb_'+str(auto_encoder_sampling)+'_filter_'+str(label_filter)+'_'+str(dataset)+'_'+str(auto_encoder)+'_'+str(auto_encoder_latent_dim)+'_'+str(select_percent)+'_'+str(target_model)+'_main.csv'
     df.to_csv(output_path)
     
@@ -226,7 +230,8 @@ def main(dataset,
                                 'dataset_class_num':dataset_class_num[dataset],
                                 'one_hot_encoding':one_hot_encoding,
                                 'noise_std':noise_std,
-                                'kernel_width':kernel_width,                                                            
+                                'kernel_width':kernel_width,
+                                'VAR_threshold':var_threshold                                                            
                                 }
         explainer = LimeTabularExplainer(X_train.values, 
                                         mode=['regression' if dataset_class_num[dataset]=='numerous' else 'classification'][0], 
@@ -274,8 +279,9 @@ def main(dataset,
         score = f'{score:.3f}'
         mse = 0.5*(exp.local_pred - np.max(local_output))**2
         mse = f'{mse[0]:.3f}'
+        Active_latent_dim = exp.Active_latent_dim
         # iAUC = None
-        print(f'instance:{i}, score:{score}, mse:{mse}, class:{np.argmax(local_output)}')
+        print(f'instance:{i}, score:{score}, mse:{mse}, class:{np.argmax(local_output)}, Active_latent_dim:{Active_latent_dim}')
 
         # 実験結果の保存
         df = pd.read_csv(output_path,index_col=0)
@@ -297,8 +303,9 @@ def main(dataset,
                             target_model,
                             min(local_output),
                             L1,
-                            L2]],
-                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','L1','L2'])
+                            L2,
+                            Active_latent_dim]],
+                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','L1','L2','Active_latent_dim'])
         
         temp = temp.astype({col: 'int' for col in temp.columns if temp[col].dtype == 'bool'})
         df = pd.concat([df, temp], axis=0)

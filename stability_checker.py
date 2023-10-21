@@ -14,13 +14,13 @@ import itertools
 from functions import calculate_jaccard_for_all_combinations, append_to_csv
 import statistics
 
-DATA = int(sys.argv[1])
-LIMEs = int(sys.argv[2])
-Target = int(sys.argv[3])
+LIMEs = int(sys.argv[1])
+DATA = int(sys.argv[2])
+Target = 0 #int(sys.argv[3])
 
 ## 実験条件
-conditions = [[['CVAE'],[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0],[True], [True] ], # 
-              [['VAE'] ,[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0], [0],[True], [True] ],
+conditions = [[['CVAE'],[1.0], [0],[True], [True] ], # 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
+              [['VAE'] ,[1.0], [0],[True], [True] ],
               [['AE']  ,[0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],[True], [False]],
               [['LIME'],[0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],[False],[False]],
               ][LIMEs]
@@ -52,31 +52,44 @@ num_samples = 5000
 # auto_encoder_weighting = [True]
 # auto_encoder_sampling = [True]
 # auto_encoder = ['ICVAE2', 'ICVAE', 'CVAE', 'VAE', 'AE', 'LIME']
-auto_encoder_training =  False
+auto_encoder_training =  True
 auto_encoder_epochs = 1000
-auto_encoder_latent_dim = 2
-one_hot_encoding = True
 feature_selection = 'auto'
 noise_std = noise_std
 model_regressor = None # 'ridge'ということ
+auto_encoder_latent_dim = {'breastcancer':[2,4,6,8,10,12,14],
+                           'credit_one_hot':[2,4,6,8,10,12,14],
+                           'adult_one_hot':[2,4,6,8,10,12,14],
+                           'liver':[2,4,6,8],
+                           'wine':[2,4,6,8,10],
+                           }[dataset]
+
+# 条件ベクトルのone-hotエンコード
+if dataset == 'wine':
+    one_hot_encoding = True
+else:
+    one_hot_encoding = False
 
 # 安定性評価
 stability_check = True
 repeat_num = 1
-instance_no = range(100)
+instance_no = range(1)
 kernel_width = kernel_width
 
 # 実装していないが，過去実験との互換用
 label_filtering = False
 select_percent = 100
 
+#活性潜在変数か否かの分散ベクトルの閾値
+var_threshold = 0.5
+
 #　実験組み合わせの生成
-p = itertools.product(dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width)
+p = itertools.product(dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, auto_encoder_latent_dim)
 
 # ... [以前のコードはそのまま]
 
-for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width in p:
-    print(f'==============dataset:{dataset}_targetmodel:{target_model}_weighting:{auto_encoder_weighting}_sampling:{auto_encoder_sampling}_AE:{auto_encoder}_std:{noise_std}_kernel:{kernel_width}=============')
+for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, auto_encoder_latent_dim in p:
+    print(f'==============dataset:{dataset}_targetmodel:{target_model}_weighting:{auto_encoder_weighting}_sampling:{auto_encoder_sampling}_AE:{auto_encoder}_std:{noise_std}_kernel:{kernel_width}_Dim:{auto_encoder_latent_dim}=============')
     if auto_encoder == 'AE':
         auto_encoder_sampling = False
     if auto_encoder != 'AE':
@@ -91,7 +104,7 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
     
     for test_range in [[instance_no] for _ in range(repeat_num)]:
         try:
-            feature_list, score, mse, predict_label, label, L1, L2 = main(
+            feature_list, score, mse, predict_label, label, L1, L2, Active_latent_dim = main(
                 dataset,
                 dataset_class_num,
                 target_model,
@@ -111,12 +124,13 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
                 model_regressor,
                 stability_check,
                 kernel_width,
-                num_samples)
+                num_samples,
+                var_threshold)
     
             features_from_lime_runs.append([item[0] for item in feature_list])
             append_to_csv(f'save_data/test_stability/{dataset}{target_model}{auto_encoder_weighting}{auto_encoder_sampling}{auto_encoder}{instance_no}.csv',
-                      [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, None, score, mse, predict_label, label, L1, L2],
-                      ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'score', 'mse','predict_label','label', 'L1', 'L2'],
+                      [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, None, score, mse, predict_label, label, L1, L2, Active_latent_dim],
+                      ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'score', 'mse','predict_label','label', 'L1', 'L2','Active_latent_dim'],
                       )
         except Exception as e:
             print(f"Error occurred with dataset:{dataset} and target_model:{target_model}. Skipping. Error: {e}")
@@ -133,7 +147,7 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
     
     append_to_csv(f'save_data/test_stability/{dataset}{target_model}{auto_encoder_weighting}{auto_encoder_sampling}{auto_encoder}{instance_no}.csv',
                 [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, jaccard_values_mean, None, None, predict_label, label, L1, L2],
-                ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'R2', 'mse','predict_label','label', 'L1', 'L2'],
+                ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'R2', 'mse','predict_label','label', 'L1', 'L2','Active_latent_dim'],
                 )
 
 

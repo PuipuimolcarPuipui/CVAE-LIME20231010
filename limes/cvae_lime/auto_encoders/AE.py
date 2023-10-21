@@ -35,10 +35,14 @@ def AE_training(X_train=None,
     warnings.filterwarnings('ignore', category=UserWarning)
 
     input_dim = X_train.shape[1]
-    if input_dim >= 12:
-        Dense_dim = int(input_dim/6)
-    else:
-        Dense_dim = 4
+    # 隠れ層の次元数を設定
+    import math
+    temp = math.sqrt(input_dim * latent_dim)
+    Dense_dim = math.ceil(temp / 2) * 2 if temp % 2 != 0 else temp
+    # if input_dim >= 12:
+    #     Dense_dim = int(input_dim/6)
+    # else:
+    #     Dense_dim = 4
   
     if auto_encoder=='AE':
         # オートエンコーダのモデルの構築
@@ -476,7 +480,8 @@ def AE_load(X_test=None,
         auto_encoder_sampling=None,
         one_hot_encoding=None,
         noise_std=None,
-        kernel_width=None
+        kernel_width=None,
+        VAR_threshold=None
         ):
     '''
     X_test:説明対象のインスタンス
@@ -518,7 +523,7 @@ def AE_load(X_test=None,
         # CVAEの場合
         if auto_encoder == 'CVAE' or auto_encoder == 'ICVAE2':
             if one_hot_encoding == True:
-                latent_vector, _, _ = encoder.predict([X_test.reshape(1, len(X_test)), X_test_predict],verbose=0) 
+                latent_vector, latent_var, _ = encoder.predict([X_test.reshape(1, len(X_test)), X_test_predict],verbose=0) 
                 # # 入力とクラスを結合
                 # combined_input = concatenate([X_test.reshape(1, len(X_test)), X_test_predict])
                 # latent_vector = encoder.predict(combined_input)
@@ -527,12 +532,17 @@ def AE_load(X_test=None,
                 # X_test_predict = np.full((1, 30), X_test_predict)
                 # X_test_predict = tf.cast(X_test_predict, dtype=tf.float32)
                 X_test_predict = X_test_predict.astype(float)
-                latent_vector, _, _ = encoder.predict([X_test.reshape(1, len(X_test)), X_test_predict.reshape(1, -1)],verbose=0)
+                latent_vector, latent_var, _ = encoder.predict([X_test.reshape(1, len(X_test)), X_test_predict.reshape(1, -1)],verbose=0)
         # CVAE以外の場合
         elif auto_encoder == 'AE':
             latent_vector = encoder.predict(X_test.reshape(1, len(X_test)),verbose=0)
         else:
-            latent_vector, _, _ = encoder.predict(X_test.reshape(1, len(X_test)),verbose=0)
+            latent_vector, latent_var, _ = encoder.predict(X_test.reshape(1, len(X_test)),verbose=0)
+        
+        # 活性潜在変数の計算
+        from functions import count_below_threshold
+        VAR = np.exp(latent_var)
+        Active_latent_dim = count_below_threshold(VAR, VAR_threshold)
         
         # (VAE,CVAE対策)潜在変数がnumpy形式で無い場合はnumpyに統一.平均ベクトルを返す(encoderを定義するときに返り値を定義しなおせばいいかもしれない)
         if not isinstance(latent_vector, np.ndarray):
@@ -613,7 +623,7 @@ def AE_load(X_test=None,
     #     from functions import extract_top_n_percent
     #     samples, weights, labels = extract_top_n_percent(samples, weights, labels, kernel_width)
         
-    return samples, weights, labels
+    return samples, weights, labels, Active_latent_dim
 
 if __name__ == '__main__':
     # データの読み込み

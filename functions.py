@@ -779,5 +779,29 @@ def tabel_exp_visualize(exp, exp_setting, total_feature_name):
         return l1_norm, l2_norm
     
     return calculate_norms(data)
+
+def count_below_threshold(VAR, VAR_threshold):
+    """
+    Count the number of elements in VAR that are below a certain threshold.
+    
+    Parameters:
+    - VAR: numpy array or list, the input data
+    - VAR_threshold: float, the threshold value
+    
+    Returns:
+    - int, number of elements below the threshold
+    """
+    import numpy as np
+    # VARがリストの場合、NumPy配列に変換
+    if isinstance(VAR, list):
+        VAR = np.array(VAR)
+    
+    # 閾値以下の要素のブールインデックスを取得
+    below_threshold_indices = VAR < VAR_threshold
+    
+    # 閾値以下の要素数をカウント
+    count = np.sum(below_threshold_indices)
+    
+    return count
     
     

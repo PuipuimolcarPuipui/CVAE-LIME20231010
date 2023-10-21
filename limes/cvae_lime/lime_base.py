@@ -218,7 +218,7 @@ class LimeBase(object):
             
         # オートエンコーダからのロード
         from limes.cvae_lime.auto_encoders.AE import AE_load
-        neighborhood_data, weights, yss = AE_load(X_test = data_row,
+        neighborhood_data, weights, yss, Active_latent_dim = AE_load(X_test = data_row,
                                     inverse = inverse,
                                     X_test_predict = X_test_condition,
                                     predict_fn = self.auto_encoder_setting['predict_fn'],
@@ -232,7 +232,8 @@ class LimeBase(object):
                                     auto_encoder_sampling = self.auto_encoder_setting['auto_encoder_sampling'],
                                     one_hot_encoding = self.auto_encoder_setting['one_hot_encoding'],
                                     noise_std = self.auto_encoder_setting['noise_std'],
-                                    kernel_width= self.auto_encoder_setting['kernel_width'],)
+                                    kernel_width= self.auto_encoder_setting['kernel_width'],
+                                    VAR_threshold = self.auto_encoder_setting['VAR_threshold'])
         
         #　ラベルによるフィルタリング
         if label_filter == True:
@@ -292,4 +293,4 @@ class LimeBase(object):
         return (easy_model.intercept_,
                 sorted(zip(used_features, easy_model.coef_),
                        key=lambda x: np.abs(x[1]), reverse=True),
-                prediction_score, local_pred)
+                prediction_score, local_pred, Active_latent_dim)
