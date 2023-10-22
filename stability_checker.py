@@ -14,8 +14,8 @@ import itertools
 from functions import calculate_jaccard_for_all_combinations, append_to_csv
 import statistics
 
-LIMEs = int(sys.argv[1])
-DATA = int(sys.argv[2])
+LIMEs = 0 #int(sys.argv[1])
+DATA = 0 #int(sys.argv[2])
 Target = 0 #int(sys.argv[3])
 
 ## 実験条件
@@ -52,7 +52,7 @@ num_samples = 5000
 # auto_encoder_weighting = [True]
 # auto_encoder_sampling = [True]
 # auto_encoder = ['ICVAE2', 'ICVAE', 'CVAE', 'VAE', 'AE', 'LIME']
-auto_encoder_training =  True
+auto_encoder_training =  False
 auto_encoder_epochs = 1000
 feature_selection = 'auto'
 noise_std = noise_std
@@ -60,9 +60,9 @@ model_regressor = None # 'ridge'ということ
 auto_encoder_latent_dim = {'breastcancer':[2,4,6,8,10,12,14],
                            'credit_one_hot':[2,4,6,8,10,12,14],
                            'adult_one_hot':[2,4,6,8,10,12,14],
-                           'liver':[2,4,6,8],
-                           'wine':[2,4,6,8,10],
-                           }[dataset]
+                           'liver':[2,4,6],
+                           'wine':[2,4,6],
+                           }[dataset[0]]
 
 # 条件ベクトルのone-hotエンコード
 if dataset == 'wine':
@@ -136,6 +136,9 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
             print(f"Error occurred with dataset:{dataset} and target_model:{target_model}. Skipping. Error: {e}")
             predict_label = ""
             label = ""
+            L1 = ""
+            L2 = ""
+            Active_latent_dim = ""
             
     if repeat_num != 1:
         jaccard_values = calculate_jaccard_for_all_combinations(features_from_lime_runs)

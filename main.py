@@ -15,8 +15,8 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
 AE = 3#int(sys.argv[1])
-target = int(sys.argv[1])
-DATA = int(sys.argv[2])
+target = 0 #int(sys.argv[1])
+DATA = 0 #int(sys.argv[2])
 
 ## 実験条件 
 dataset = ['breastcancer','credit','wine','credit_one_hot','adult_one_hot','liver','boston','adult'][DATA] #, 'boston', 'hepa'

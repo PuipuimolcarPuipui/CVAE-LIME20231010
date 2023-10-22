@@ -39,6 +39,7 @@ def AE_training(X_train=None,
     import math
     temp = math.sqrt(input_dim * latent_dim)
     Dense_dim = math.ceil(temp / 2) * 2 if temp % 2 != 0 else temp
+    # print('CHECK')
     # if input_dim >= 12:
     #     Dense_dim = int(input_dim/6)
     # else:
