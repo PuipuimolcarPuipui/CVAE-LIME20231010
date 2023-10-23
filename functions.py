@@ -605,7 +605,7 @@ def read_object_from_file(filename):
         return dill.load(f)
     
 # MNISTを含むexpの画像を表示するプログラム
-def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label, X_train, original_model=None):
+def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label, X_train, auto_encoder_latent_dim, original_model=None):
     import numpy as np
     import matplotlib.pyplot as plt
     from PIL import Image
@@ -629,13 +629,13 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
     # 最初の画像を描画して保存
     plt.imshow(image_data1, cmap='gray')
     plt.axis('off')
-    plt.savefig(f"temp/exp_{auto_encoder}_{target_model}.png", bbox_inches='tight', pad_inches=0)
+    plt.savefig(f"temp/exp_{auto_encoder}_{auto_encoder_latent_dim}_{target_model}.png", bbox_inches='tight', pad_inches=0)
     plt.close()  # グラフをクリア
 
     # 2番目の画像を描画して保存
     plt.imshow(image_data2, cmap='gray')
     plt.axis('off')
-    plt.savefig(f"temp/testinstance_{auto_encoder}_{target_model}.png", bbox_inches='tight', pad_inches=0)
+    plt.savefig(f"temp/testinstance_{auto_encoder}_{auto_encoder_latent_dim}_{target_model}.png", bbox_inches='tight', pad_inches=0)
     plt.close()  # グラフをクリア
     
     if original_model != None:
@@ -716,7 +716,7 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
 
         plt.subplots_adjust(wspace=0, hspace=0)
         plt.tight_layout()
-        plt.savefig(f"save_data/MNIST_png/combined_GradCAM_and_IG_{auto_encoder}_{target_model}_{label}_{instance_no}.png", bbox_inches='tight', pad_inches=0)
+        plt.savefig(f"save_data/MNIST_png/combined_GradCAM_and_IG_{auto_encoder}_{auto_encoder_latent_dim}_{target_model}_{label}_{instance_no}.png", bbox_inches='tight', pad_inches=0)
         plt.close()
         
         import math
@@ -724,8 +724,8 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
 
     else:
         # 2つの画像を読み込む
-        img1 = Image.open(f"temp/exp_{auto_encoder}_{target_model}.png")
-        img2 = Image.open(f"temp/testinstance_{auto_encoder}_{target_model}.png")
+        img1 = Image.open(f"temp/exp_{auto_encoder}_{auto_encoder_latent_dim}_{target_model}.png")
+        img2 = Image.open(f"temp/testinstance_{auto_encoder}_{auto_encoder_latent_dim}_{target_model}.png")
 
         # 画像を横に結合
         combined_img = Image.new('RGB', (img1.width + img2.width, img1.height))
@@ -733,7 +733,7 @@ def MNIST_exp(test_instance, exp, auto_encoder, target_model, instance_no, label
         combined_img.paste(img1, (img1.width, 0))
 
         # 結合した画像を保存
-        combined_img.save(f"save_data/MNIST_png/combined_{auto_encoder}_{target_model}_{label}_{instance_no}.png")
+        combined_img.save(f"save_data/MNIST_png/combined_{auto_encoder}_{auto_encoder_latent_dim}_{target_model}_{label}_{instance_no}.png")
         
         import math
         return  sum(abs(x) for x in data_only), math.sqrt(sum(x**2 for x in data_only))
@@ -804,4 +804,15 @@ def count_below_threshold(VAR, VAR_threshold):
     
     return count
     
+def simple_WSL(X, y, weights):
+    import statsmodels.api as sm
+    import numpy as np
     
+    # 定数項 (intercept) を追加
+    X = sm.add_constant(X)
+
+    # WLSモデルの作成とフィット
+    model = sm.WLS(y, X, weights=weights).fit()
+
+    # 結果のサマリーを表示
+    print(model.summary())

@@ -15,8 +15,9 @@ warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
 DATA = 5 #int(sys.argv[1])
-AE = int(sys.argv[1])
+AE = 0 #int(sys.argv[1])
 target = 0 #int(sys.argv[2])
+latent_dim = 2 #int(sys.argv[2])
 
 ## 実験条件 
 dataset = ['breastcancer', 'wine', 'liver', 'adult', 'credit', 'MNIST'][DATA] #, 'boston', 'hepa'
@@ -37,9 +38,9 @@ num_samples = 5000
 auto_encoder = ['CVAE', 'VAE', 'AE', 'LIME', 'ICVAE', 'ICVAE2'][AE]
 auto_encoder_weighting = True
 auto_encoder_sampling = True
-auto_encoder_training = True
+auto_encoder_training = False
 auto_encoder_epochs = 100
-auto_encoder_latent_dim = 10
+auto_encoder_latent_dim = latent_dim
 one_hot_encoding = False
 feature_selection = 'auto'
 model_regressor = None
@@ -268,7 +269,7 @@ def main(dataset,
         
         # 説明の可視化とL1及びL2ノルムの獲得
         from functions import MNIST_exp
-        L1, L2 = MNIST_exp(X_test.values[i], exp.local_exp, auto_encoder, target_model, i,y_test.values[i], X_train.values, original_model=original_model)
+        L1, L2 = MNIST_exp(X_test.values[i], exp.local_exp, auto_encoder, target_model, i,y_test.values[i], X_train.values, auto_encoder_latent_dim, original_model=original_model)
         
         
         # 評価値の算出

@@ -1,0 +1,9 @@
+dataset,target_model,auto_encoder_weighting,auto_encoder_sampling,auto_encoder,instance_no,noise_std,kernel_width,jaccard_values,score,mse,predict_label,label,L1,L2,Active_latent_dim,latent_dim
+credit_one_hot,SVM,True,True,CVAE,38,0.01,0,,0.177,0.000,[1],1,0.0010038765758508816,0.00045567641121921164,0,2
+credit_one_hot,SVM,True,True,CVAE,38,0.01,0,0,,,[1],1,0.0010038765758508816,0.00045567641121921164,0,2
+credit_one_hot,SVM,True,True,CVAE,38,0.01,0,,0.093,0.000,[1],1,0.0009284634888899745,0.0004079116644813588,0,4
+credit_one_hot,SVM,True,True,CVAE,38,0.01,0,0,,,[1],1,0.0009284634888899745,0.0004079116644813588,0,4
+credit_one_hot,SVM,True,True,CVAE,38,0.01,0,,0.124,0.000,[1],1,0.0030293201125459746,0.0010835533698516063,0,6
+credit_one_hot,SVM,True,True,CVAE,38,0.01,0,0,,,[1],1,0.0030293201125459746,0.0010835533698516063,0,6
+credit_one_hot,SVM,True,True,CVAE,38,0.05,0,,0.879,0.000,[1],1,0.007462013665644918,0.003578305898227525,0,2
+credit_one_hot,SVM,True,True,CVAE,38,0.05,0,0,,,[1],1,0.007462013665644918,0.003578305898227525,0,2

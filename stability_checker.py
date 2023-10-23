@@ -14,13 +14,13 @@ import itertools
 from functions import calculate_jaccard_for_all_combinations, append_to_csv
 import statistics
 
-LIMEs = 0 #int(sys.argv[1])
-DATA = 0 #int(sys.argv[2])
-Target = 0 #int(sys.argv[3])
+LIMEs = int(sys.argv[1])  # 0 1
+Target = int(sys.argv[2]) # 0 1 2
+DATA = int(sys.argv[3])   # 0 1 2 3 4
 
 ## 実験条件
-conditions = [[['CVAE'],[1.0], [0],[True], [True] ], # 0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,
-              [['VAE'] ,[1.0], [0],[True], [True] ],
+conditions = [[['CVAE'],[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1.0], [0],[True], [True] ], 
+              [['VAE'] ,[0.01, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9,1.0], [0],[True], [True] ],
               [['AE']  ,[0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],[True], [False]],
               [['LIME'],[0], [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],[False],[False]],
               ][LIMEs]
@@ -57,9 +57,9 @@ auto_encoder_epochs = 1000
 feature_selection = 'auto'
 noise_std = noise_std
 model_regressor = None # 'ridge'ということ
-auto_encoder_latent_dim = {'breastcancer':[2,4,6,8,10,12,14],
-                           'credit_one_hot':[2,4,6,8,10,12,14],
-                           'adult_one_hot':[2,4,6,8,10,12,14],
+auto_encoder_latent_dim = {'breastcancer':[2,4,6],
+                           'credit_one_hot':[2,4,6],
+                           'adult_one_hot':[2,4,6],
                            'liver':[2,4,6],
                            'wine':[2,4,6],
                            }[dataset[0]]
@@ -73,7 +73,7 @@ else:
 # 安定性評価
 stability_check = True
 repeat_num = 1
-instance_no = range(1)
+instance_no = range(100)
 kernel_width = kernel_width
 
 # 実装していないが，過去実験との互換用
@@ -126,12 +126,12 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
                 kernel_width,
                 num_samples,
                 var_threshold)
-    
+
             features_from_lime_runs.append([item[0] for item in feature_list])
             append_to_csv(f'save_data/test_stability/{dataset}{target_model}{auto_encoder_weighting}{auto_encoder_sampling}{auto_encoder}{instance_no}.csv',
-                      [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, None, score, mse, predict_label, label, L1, L2, Active_latent_dim],
-                      ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'score', 'mse','predict_label','label', 'L1', 'L2','Active_latent_dim'],
-                      )
+                        [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, None, score, mse, predict_label, label, L1, L2, Active_latent_dim, auto_encoder_latent_dim],
+                        ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'score', 'mse','predict_label','label', 'L1', 'L2','Active_latent_dim','latent_dim'],
+                        )
         except Exception as e:
             print(f"Error occurred with dataset:{dataset} and target_model:{target_model}. Skipping. Error: {e}")
             predict_label = ""
@@ -149,8 +149,8 @@ for dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_e
         jaccard_values_mean = 0
     
     append_to_csv(f'save_data/test_stability/{dataset}{target_model}{auto_encoder_weighting}{auto_encoder_sampling}{auto_encoder}{instance_no}.csv',
-                [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, jaccard_values_mean, None, None, predict_label, label, L1, L2],
-                ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'R2', 'mse','predict_label','label', 'L1', 'L2','Active_latent_dim'],
+                [dataset, target_model, auto_encoder_weighting, auto_encoder_sampling, auto_encoder, instance_no, noise_std, kernel_width, jaccard_values_mean, None, None, predict_label, label, L1, L2, Active_latent_dim, auto_encoder_latent_dim],
+                ['dataset', 'target_model', 'auto_encoder_weighting', 'auto_encoder_sampling', 'auto_encoder', 'instance_no', 'noise_std', 'kernel_width', 'jaccard_values', 'R2', 'mse','predict_label','label', 'L1', 'L2','Active_latent_dim','latent_dim'],
                 )
 
 

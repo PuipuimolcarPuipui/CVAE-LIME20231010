@@ -286,6 +286,11 @@ class LimeBase(object):
 
         local_pred = easy_model.predict(neighborhood_data[0, used_features].reshape(1, -1))
 
+        # 単純な重み付き線形モデルとして評価する
+        from functions import simple_WSL
+        simple_WSL(neighborhood_data[:, used_features], labels_column, weights)
+        print('STOP')
+        
         if self.verbose:
             print('Intercept', easy_model.intercept_)
             print('Prediction_local', local_pred,)

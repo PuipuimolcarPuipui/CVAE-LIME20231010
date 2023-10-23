@@ -251,9 +251,10 @@ def main(dataset,
                             label_filter,
                             process_time,
                             target_model,
-                            min(local_output)],
-                            Active_latent_dim],
-                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim'])
+                            min(local_output),
+                            Active_latent_dim,
+                            auto_encoder_latent_dim]],
+                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim'])
         temp = temp.astype({col: 'int' for col in temp.columns if temp[col].dtype == 'bool'})
         df = pd.concat([df, temp], axis=0)
         df.to_csv(output_path)
