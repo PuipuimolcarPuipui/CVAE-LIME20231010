@@ -814,5 +814,11 @@ def simple_WSL(X, y, weights):
     # WLSモデルの作成とフィット
     model = sm.WLS(y, X, weights=weights).fit()
 
+    # p値が0.05以下の係数の数をカウント
+    significant_coeffs = (model.pvalues < 0.05).sum()
+    
     # 結果のサマリーを表示
-    print(model.summary())
+    # print(model.summary())
+    print(significant_coeffs)
+    
+    return significant_coeffs

@@ -14,12 +14,12 @@ warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
-AE = 3#int(sys.argv[1])
-target = 0 #int(sys.argv[1])
-DATA = 0 #int(sys.argv[2])
+AE = 3 #int(sys.argv[1])
+target = int(sys.argv[1])
+DATA = int(sys.argv[2])
 
 ## 実験条件 
-dataset = ['breastcancer','credit','wine','credit_one_hot','adult_one_hot','liver','boston','adult'][DATA] #, 'boston', 'hepa'
+dataset = ['breastcancer','wine','credit_one_hot','adult_one_hot','liver'][DATA] #, 'boston', 'hepa', ,'boston','adult','credit'
 dataset_class_num = {'breastcancer':2,
                     'hepa': 2,
                     'liver':2,
@@ -106,7 +106,7 @@ def main(dataset,
                                 dataset_class_num = dataset_class_num)
 
     ## 実験結果格納用のCSVを定義
-    df = pd.DataFrame([['','','','','','','','','','','','','','','','','']],
+    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','','']],
                         columns=['dataset',
                                 'weighting_fn',
                                 'epoch_num',
@@ -123,7 +123,9 @@ def main(dataset,
                                 'process_time',
                                 'target_model',
                                 'local_output',
-                                'Active_latent_dim'])
+                                'Active_latent_dim',
+                                'L1',
+                                'L2'])
     output_path = 'save_data/test_result/turb_'+str(auto_encoder_sampling)+'_filter_'+str(label_filter)+'_'+str(dataset)+'_'+str(auto_encoder)+'_'+str(auto_encoder_latent_dim)+'_'+str(select_percent)+'_'+str(target_model)+'.csv'
     df.to_csv(output_path)
     
@@ -186,7 +188,8 @@ def main(dataset,
                                 'one_hot_encoding':one_hot_encoding,
                                 'noise_std':noise_std,
                                 'kernel_width':kernel_width,
-                                'VAR_threshold':var_threshold                                                            
+                                'VAR_threshold':var_threshold,
+                                'add_condition':add_condition                                                            
                                 }
         explainer = LimeTabularExplainer(X_train.values, 
                                         mode=['regression' if dataset_class_num[dataset]=='numerous' else 'classification'][0], 
@@ -229,10 +232,20 @@ def main(dataset,
         score = f'{score:.3f}'
         mse = 0.5*(exp.local_pred - np.max(local_output))**2
         mse = f'{mse[0]:.3f}'
-        Active_latent_dim = exp.Active_latent_dim
+        if auto_encoder != 'LIME':
+            Active_latent_dim = exp.Active_latent_dim
+        else:
+            Active_latent_dim = ''
         # iAUC = None
         print(f'instance:{i}, score:{score}, mse:{mse}, class:{np.argmax(local_output)}, Active_latent_dim:{Active_latent_dim}')
 
+                
+        tabel_exp_visualizing = True
+        if tabel_exp_visualizing == True:
+            from functions import tabel_exp_visualize
+            name = 'turb_'+str(setting_dic['auto_encoder_sampling'])+'_filter_'+str(setting_dic['filtering'])+'_'+str(setting_dic['dataset'])+'_'+str(setting_dic['auto_encoder'])+'_'+str(setting_dic['latent_dim'])+'_'+str(setting_dic['select_percent'])+'_'+str(target_model)
+            L1, L2 = tabel_exp_visualize(exp,name,X_train.columns.tolist())
+        
         # 実験結果の保存
         df = pd.read_csv(output_path,index_col=0)
         df.to_csv(output_path)
@@ -253,8 +266,10 @@ def main(dataset,
                             target_model,
                             min(local_output),
                             Active_latent_dim,
-                            auto_encoder_latent_dim]],
-                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim'])
+                            auto_encoder_latent_dim,
+                            L1,
+                            L2]],
+                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim','L1','L2'])
         temp = temp.astype({col: 'int' for col in temp.columns if temp[col].dtype == 'bool'})
         df = pd.concat([df, temp], axis=0)
         df.to_csv(output_path)
@@ -275,12 +290,6 @@ def main(dataset,
             from functions import write_object_to_file
             filename = str(dataset)+'_'+str(auto_encoder)
             write_object_to_file(data_for_iAUC, 'save_data/test_iAUC/' + filename + '.dill')
-        
-        tabel_exp_visualizing = True
-        if tabel_exp_visualizing == True:
-            from functions import tabel_exp_visualize
-            name = 'turb_'+str(setting_dic['auto_encoder_sampling'])+'_filter_'+str(setting_dic['filtering'])+'_'+str(setting_dic['dataset'])+'_'+str(setting_dic['auto_encoder'])+'_'+str(setting_dic['latent_dim'])+'_'+str(setting_dic['select_percent'])+'_'+str(target_model)
-            L1, L2 = tabel_exp_visualize(exp,name,X_train.columns.tolist())
             
         if stability_check == True:
             # 実行の度の計算結果を格納

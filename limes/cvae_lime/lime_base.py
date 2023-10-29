@@ -288,8 +288,7 @@ class LimeBase(object):
 
         # 単純な重み付き線形モデルとして評価する
         from functions import simple_WSL
-        simple_WSL(neighborhood_data[:, used_features], labels_column, weights)
-        print('STOP')
+        significant_coeffs = simple_WSL(neighborhood_data[:, used_features], labels_column, weights)
         
         if self.verbose:
             print('Intercept', easy_model.intercept_)
@@ -298,4 +297,4 @@ class LimeBase(object):
         return (easy_model.intercept_,
                 sorted(zip(used_features, easy_model.coef_),
                        key=lambda x: np.abs(x[1]), reverse=True),
-                prediction_score, local_pred, Active_latent_dim)
+                prediction_score, local_pred, Active_latent_dim, significant_coeffs)
