@@ -24,7 +24,8 @@ def AE_training(X_train=None,
             auto_encoder=None,
             dataset_class_num=None,
             one_hot_encoding=None,
-            verbose=1
+            verbose=1,
+            add_condition=None
             ):
     import sys
     sys.path.append('/home/CVAE-LIME20230902')
@@ -168,12 +169,16 @@ def AE_training(X_train=None,
             epsilon = K.random_normal(shape=(batch, dim))
             return z_mean + K.exp(0.5 * z_log_var) * epsilon
         
-        #　条件付けに関する設定
         input_dim = X_train.shape[1]
+        
         if one_hot_encoding == True:
             condition_dim = [4 if dataset_class_num == 'numerous' else dataset_class_num][0]
         else:
             condition_dim = 1
+            
+        #　条件付けに関する設定
+        if add_condition != '':
+            condition_dim = condition_dim + len(X_train[add_condition])
         
         # CVAEモデルのアーキテクチャ
         # 入力と条件を結合
@@ -233,18 +238,25 @@ def AE_training(X_train=None,
                 y_train = to_categorical(y_train, num_classes=int(dataset_class_num))
                 y_valid = to_categorical(y_valid, num_classes=int(dataset_class_num))
                 y_test = to_categorical(y_test, num_classes=int(dataset_class_num))
+                
+        #　条件付けに関する設定
+        if add_condition != '':
+            import numpy as np
+            _ = X_train[:,add_condition]
+            y_train = np.concatenate((y_train.to_numpy().reshape(-1, 1), X_train[:,add_condition]), axis=1)
+            y_valid = np.concatenate((y_valid.to_numpy().reshape(-1, 1), X_valid[:,add_condition]), axis=1)
+            y_test = np.concatenate((y_test.to_numpy().reshape(-1, 1), X_test.iloc[:, add_condition]), axis=1)
             
-        
         history = vae.fit([X_train, y_train], None, shuffle=True, epochs=epochs, batch_size=16, validation_data=([X_valid, y_valid], None), verbose=verbose)
 
-        encoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_encoder_dim{latent_dim}_epoch{epochs}.keras')
+        encoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_encoder_dim{latent_dim}_epoch{epochs}{add_condition}.keras')
 
         decoder_input_dim = latent_dim + condition_dim
         decoder_input = Input(shape=(decoder_input_dim,))
         _h_decoded = decoder_h(decoder_input)
         _x_decoded_mean = decoder_mean(_h_decoded)
         decoder = Model(decoder_input, _x_decoded_mean)
-        decoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_decoder_dim{latent_dim}_epoch{epochs}.keras')
+        decoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_decoder_dim{latent_dim}_epoch{epochs}{add_condition}.keras')
         
         X_test_reconstructed = vae.predict([X_test, y_test], verbose=verbose)
         reconstruction_mse = np.mean(np.power(X_test - X_test_reconstructed, 2), axis=1)
@@ -482,7 +494,8 @@ def AE_load(X_test=None,
         one_hot_encoding=None,
         noise_std=None,
         kernel_width=None,
-        VAR_threshold=None
+        VAR_threshold=None,
+        add_condition=None
         ):
     '''
     X_test:説明対象のインスタンス
@@ -501,9 +514,13 @@ def AE_load(X_test=None,
     import math
     
     # モデルの読み込み
-    encoder = load_model(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_encoder_dim{latent_dim}_epoch{epochs}.keras',safe_mode=False)
-    decoder = load_model(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_decoder_dim{latent_dim}_epoch{epochs}.keras',safe_mode=False)
+    encoder = load_model(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_encoder_dim{latent_dim}_epoch{epochs}{add_condition}.keras',safe_mode=False)
+    decoder = load_model(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_decoder_dim{latent_dim}_epoch{epochs}{add_condition}.keras',safe_mode=False)
     
+    # 条件ベクトルに入力データの一部を結合
+    if add_condition != '':
+        X_test_predict = np.concatenate((np.array([X_test_predict]), X_test[add_condition]))
+        
     # 重み付けのみの場合
     if auto_encoder_weighting == True and auto_encoder_sampling == False:
         # samplesの定義
@@ -516,7 +533,7 @@ def AE_load(X_test=None,
         # 重みの定義
         weights = np.power(1/ math.e, distances)
         # weights = np.sqrt(np.exp(-(distances ** 2) / kernel_width ** 2))
-        
+    
         
     # 重み付けとサンプル生成を行う場合
     elif auto_encoder_sampling == True:
@@ -548,6 +565,7 @@ def AE_load(X_test=None,
         # (VAE,CVAE対策)潜在変数がnumpy形式で無い場合はnumpyに統一.平均ベクトルを返す(encoderを定義するときに返り値を定義しなおせばいいかもしれない)
         if not isinstance(latent_vector, np.ndarray):
             latent_vector = np.array(latent_vector)[1]
+            
         # 5000個のノイズを加えた潜在ベクトルを作成
         noise = np.random.normal(loc=0, scale=noise_std, size=(num_samples, *latent_vector.shape))
         latent_vectors = np.squeeze(latent_vector + noise)

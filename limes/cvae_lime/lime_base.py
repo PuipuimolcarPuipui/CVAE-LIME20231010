@@ -233,7 +233,9 @@ class LimeBase(object):
                                     one_hot_encoding = self.auto_encoder_setting['one_hot_encoding'],
                                     noise_std = self.auto_encoder_setting['noise_std'],
                                     kernel_width= self.auto_encoder_setting['kernel_width'],
-                                    VAR_threshold = self.auto_encoder_setting['VAR_threshold'])
+                                    VAR_threshold = self.auto_encoder_setting['VAR_threshold'],
+                                    add_condition = self.auto_encoder_setting['add_condition'],
+                                    )
         
         #　ラベルによるフィルタリング
         if label_filter == True:

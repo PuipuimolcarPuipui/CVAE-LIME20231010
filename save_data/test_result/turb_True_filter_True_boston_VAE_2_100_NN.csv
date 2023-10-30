@@ -1,3 +1,0 @@
-,dataset,weighting_fn,epoch_num,latent_size,num_samples,select_percent,instance_no,predict_label,label,r2,mse,element1,element3,process_time,target_model,local_output
-0,,,,,,,,,,,,,,,,
-0,boston,VAE,1000.0,2.0,5000.0,100.0,99.0,[0.20838839],0.2711111111111111,0.099,0.000,1.0,1.0,3.9,NN,0.20838839

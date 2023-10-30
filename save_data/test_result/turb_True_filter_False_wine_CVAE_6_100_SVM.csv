@@ -1,3 +1,0 @@
-,dataset,weighting_fn,epoch_num,latent_size,num_samples,select_percent,instance_no,predict_label,label,r2,mse,element1,element3,process_time,target_model,local_output,Active_latent_dim,auto_encoder_latent_dim
-0,,,,,,,,,,,,,,,,,,
-0,wine,CVAE,1000.0,6.0,5000.0,100.0,99.0,[1],0.0,0.942,0.016,1.0,0.0,20.4,SVM,0.011942705024145003,3.0,6.0

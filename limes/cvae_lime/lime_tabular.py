@@ -204,7 +204,8 @@ class LimeTabularExplainer(object):
                         dataset = auto_encoder_setting['dataset'],
                         auto_encoder = auto_encoder_setting['auto_encoder'],
                         dataset_class_num = auto_encoder_setting['dataset_class_num'],
-                        one_hot_encoding=self.auto_encoder_setting['one_hot_encoding']
+                        one_hot_encoding = self.auto_encoder_setting['one_hot_encoding'],
+                        add_condition = self.auto_encoder_setting['add_condition'],
                         )
 
         # Check and raise proper error in stats are supplied in non-descritized path

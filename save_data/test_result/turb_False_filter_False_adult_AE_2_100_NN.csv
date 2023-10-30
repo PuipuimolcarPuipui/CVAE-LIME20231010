@@ -1,3 +1,0 @@
-,dataset,weighting_fn,epoch_num,latent_size,num_samples,select_percent,instance_no,predict_label,label,r2,mse,element1,element3,process_time,target_model,local_output
-0,,,,,,,,,,,,,,,,
-0,adult,AE,1000.0,2.0,5000.0,100.0,99.0,[0],0.0,0.554,0.000,0.0,0.0,9.7,NN,0.00044685046
