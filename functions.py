@@ -822,3 +822,20 @@ def simple_WSL(X, y, weights):
     print(significant_coeffs)
     
     return significant_coeffs
+
+
+def RSS_fn(easy_model, neighborhood_data, labels_column, weights):
+    import numpy as np
+    # モデルを使って予測値を計算
+    predictions = easy_model.predict(neighborhood_data)
+    
+    # 実際の値と予測値の差（残差）を計算
+    residuals = labels_column - predictions
+    
+    # 残差を重みで重み付けする
+    weighted_residuals = residuals
+    
+    # 残差の二乗和（RSS）を計算
+    RSS = np.sum(weighted_residuals ** 2)
+    
+    return RSS

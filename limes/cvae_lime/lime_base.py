@@ -287,6 +287,10 @@ class LimeBase(object):
             labels_column, sample_weight=weights)
 
         local_pred = easy_model.predict(neighborhood_data[0, used_features].reshape(1, -1))
+        
+        # RSSの計算
+        from function import RSS_fn
+        RSS = RSS_fn(easy_model, neighborhood_data, labels_column, weights)
 
         # 単純な重み付き線形モデルとして評価する
         from functions import simple_WSL
@@ -299,4 +303,4 @@ class LimeBase(object):
         return (easy_model.intercept_,
                 sorted(zip(used_features, easy_model.coef_),
                        key=lambda x: np.abs(x[1]), reverse=True),
-                prediction_score, local_pred, Active_latent_dim, significant_coeffs)
+                prediction_score, local_pred, Active_latent_dim, significant_coeffs, RSS)

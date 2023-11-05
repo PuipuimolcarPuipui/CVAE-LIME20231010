@@ -14,9 +14,9 @@ warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
-AE = int(sys.argv[1])
-target = int(sys.argv[2])
-DATA = int(sys.argv[3])
+AE = 0 #int(sys.argv[1])
+target = 0 #int(sys.argv[1])
+DATA = 0 #int(sys.argv[2])
 
 ## 実験条件 
 dataset = ['breastcancer','credit_one_hot','adult_one_hot','liver','wine','MNIST'][DATA] #, 'boston', 'hepa', ,'boston','adult','credit'
@@ -64,7 +64,7 @@ preprocess = 'Minimax'
 var_threshold = 0.5
 
 #条件ベクトルに入力ベクトルを追加
-add_condition = ""#[0,1,2,3,4,5,6,7,8,9,10] #[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] #Noneの時は条件ベクトルなし, 条件ベクトルのコラム番号を指定
+add_condition = ""#[0,1,2,3,4,5] #[0,1,2,3,4,5,6,7,8,9,10] #[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] #Noneの時は条件ベクトルなし, 条件ベクトルのコラム番号を指定
 
 def main(dataset,
         dataset_class_num,
