@@ -14,9 +14,9 @@ warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
-AE = 0 #int(sys.argv[1])
+AE = int(sys.argv[1])
 target = 0 #int(sys.argv[1])
-DATA = 0 #int(sys.argv[2])
+DATA = int(sys.argv[2])
 
 ## 実験条件 
 dataset = ['breastcancer','credit_one_hot','adult_one_hot','liver','wine','MNIST'][DATA] #, 'boston', 'hepa', ,'boston','adult','credit'
@@ -154,7 +154,7 @@ def main(dataset,
         original_model = None
 
     ## 実験結果格納用のCSVを定義
-    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','','']],
+    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','','','','','']],
                         columns=['dataset',
                                 'weighting_fn',
                                 'epoch_num',
@@ -173,7 +173,10 @@ def main(dataset,
                                 'local_output',
                                 'Active_latent_dim',
                                 'L1',
-                                'L2'])
+                                'L2',
+                                'RSS',
+                                'TSS',
+                                'R2'])
     output_path = 'save_data/test_result/turb_'+str(auto_encoder_sampling)+'_filter_'+str(label_filter)+'_'+str(dataset)+'_'+str(auto_encoder)+'_'+str(auto_encoder_latent_dim)+'_'+str(select_percent)+'_'+str(target_model)+str(add_condition)+'.csv'
     df.to_csv(output_path)
     
@@ -319,8 +322,11 @@ def main(dataset,
                             Active_latent_dim,
                             auto_encoder_latent_dim,
                             L1,
-                            L2]],
-                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim','L1','L2'])
+                            L2,
+                            exp.RSS,
+                            exp.TSS,
+                            exp.R2]],
+                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim','L1','L2','RSS','TSS','R2'])
         temp = temp.astype({col: 'int' for col in temp.columns if temp[col].dtype == 'bool'})
         df = pd.concat([df, temp], axis=0)
         df.to_csv(output_path)

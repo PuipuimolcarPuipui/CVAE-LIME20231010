@@ -482,7 +482,9 @@ class LimeTabularExplainer(object):
         for label in labels:
             (ret_exp.intercept[label],
              ret_exp.local_exp[label],
-             ret_exp.score, ret_exp.local_pred, ret_exp.Active_latent_dim, ret_exp.significant_coeffs) = self.base.explain_instance_with_data(
+             ret_exp.score, 
+             ret_exp.local_pred,
+             ret_exp.Active_latent_dim, ret_exp.significant_coeffs, ret_exp.RSS, ret_exp.TSS, ret_exp.R2) = self.base.explain_instance_with_data(
                     scaled_data,
                     yss,
                     distances,

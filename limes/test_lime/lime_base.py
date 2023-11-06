@@ -212,6 +212,10 @@ class LimeBase(object):
 
         local_pred = easy_model.predict(neighborhood_data[0, used_features].reshape(1, -1))
 
+        # RSSの計算
+        from functions import RSS_TSS_fn
+        RSS, TSS, R2 = RSS_TSS_fn(easy_model, neighborhood_data[:, used_features], labels_column, weights)
+
         if self.verbose:
             print('Intercept', easy_model.intercept_)
             print('Prediction_local', local_pred,)
@@ -219,4 +223,5 @@ class LimeBase(object):
         return (easy_model.intercept_,
                 sorted(zip(used_features, easy_model.coef_),
                        key=lambda x: np.abs(x[1]), reverse=True),
-                prediction_score, local_pred)
+                prediction_score, local_pred, RSS, TSS, R2
+                )
