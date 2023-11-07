@@ -14,9 +14,10 @@ warnings.filterwarnings("ignore", category=UserWarning, module="tensorflow")
 warnings.filterwarnings("ignore", category=UserWarning, module="sklearn")
 warnings.filterwarnings("ignore", category=FutureWarning, module="pandas")
 
-AE = int(sys.argv[1])
-target = 0 #int(sys.argv[1])
-DATA = int(sys.argv[2])
+AE = 0 #int(sys.argv[1])
+target = 0 #int(sys.argv[2])
+DATA = 0 #int(sys.argv[3])
+k = 0 #int(sys.argv[4])
 
 ## 実験条件 
 dataset = ['breastcancer','credit_one_hot','adult_one_hot','liver','wine','MNIST'][DATA] #, 'boston', 'hepa', ,'boston','adult','credit'
@@ -41,7 +42,7 @@ auto_encoder_weighting = True
 auto_encoder_sampling = True
 auto_encoder_training = False
 auto_encoder_epochs = 100 if dataset == 'MNIST' else 1000
-auto_encoder_latent_dim = 2
+auto_encoder_latent_dim = [2,4,6][k]
 one_hot_encoding = False
 feature_selection = 'auto'
 model_regressor = None
@@ -273,7 +274,7 @@ def main(dataset,
                                         model_regressor=model_regressor,
                                         top_labels = 1,
                                         label_filter=label_filter,
-                                        #  num_features=30
+                                        num_features=784
                                         )
         
         # 評価値の算出

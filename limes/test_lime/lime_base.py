@@ -142,6 +142,7 @@ class LimeBase(object):
                                    distances,
                                    label,
                                    num_features,
+                                   inverse,
                                    feature_selection='auto',
                                    model_regressor=None,
                                    label_filter=None):
@@ -199,7 +200,7 @@ class LimeBase(object):
         
         # 最終的なサンプルの抽出
         exp_setting = 'turb_'+str(self.lime_setting['auto_encoder_sampling'])+'_filter_'+str(self.lime_setting['filtering'])+'_'+str(self.lime_setting['dataset'])+'_'+str(self.lime_setting['auto_encoder'])+'_'+str(self.lime_setting['latent_dim'])+'_'+str(self.lime_setting['select_percent'])+'_'+str(self.lime_setting['instance_no'])
-        np.savetxt('save_data/test_samples/' + exp_setting + '/gen_data.csv', neighborhood_data, delimiter=',')
+        np.savetxt('save_data/test_samples/' + exp_setting + '/gen_data.csv', inverse, delimiter=',')
         np.savetxt('save_data/test_samples/' + exp_setting + '/gen_data_label.csv', labels_column, delimiter=',')
         np.savetxt('save_data/test_samples/' + exp_setting + '/weights.csv', weights, delimiter=',')
         

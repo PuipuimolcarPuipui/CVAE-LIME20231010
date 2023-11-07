@@ -463,6 +463,7 @@ class LimeTabularExplainer(object):
                     distances,
                     label,
                     num_features,
+                    inverse,
                     model_regressor=model_regressor,
                     feature_selection=self.feature_selection,
                     label_filter=label_filter)

@@ -824,31 +824,60 @@ def simple_WSL(X, y, weights):
     return significant_coeffs
 
 
+# def RSS_TSS_fn(easy_model, neighborhood_data, labels_column, weights):
+#     import numpy as np
+#         # モデルを使って予測値を計算
+#     predictions = easy_model.predict(neighborhood_data)
+    
+#     # 実際の値と予測値の差（残差）を計算
+#     residuals = labels_column - predictions
+    
+#     # 残差を重みで重み付けする（weightsが指定されている場合）
+#     weighted_residuals = residuals * weights
+#     weighted_labels = labels_column * weights
+    
+#     # 残差の二乗和（RSS）を計算
+#     RSS = np.sum(weighted_residuals ** 2)
+    
+#     # 実際の値の平均を計算
+#     average_label = np.average(weighted_labels, axis=0, weights=weights)
+    
+#     # 実際の値と平均との差（全体の変動）を計算
+#     total_var = (labels_column - average_label)
+    
+#     # 全平方和（TSS）を計算
+#     TSS = np.sum(total_var ** 2  * weights)
+    
+#     # R2の計算
+#     R2 = 1 - RSS / TSS
+    
+#     return RSS, TSS, R2
+
 def RSS_TSS_fn(easy_model, neighborhood_data, labels_column, weights):
     import numpy as np
-        # モデルを使って予測値を計算
+    # モデルを使って予測値を計算
     predictions = easy_model.predict(neighborhood_data)
     
     # 実際の値と予測値の差（残差）を計算
     residuals = labels_column - predictions
     
     # 残差を重みで重み付けする（weightsが指定されている場合）
-    weighted_residuals = residuals * weights
-    weighted_labels = labels_column * weights
+    weighted_residuals = residuals ** 2 * weights
     
     # 残差の二乗和（RSS）を計算
-    RSS = np.sum(weighted_residuals ** 2)
+    RSS = np.sum(weighted_residuals)
     
     # 実際の値の平均を計算
-    average_label = np.mean(weighted_labels)
+    average_label = np.average(labels_column, weights=weights)
     
     # 実際の値と平均との差（全体の変動）を計算
-    total_var = (weighted_labels - average_label)
+    total_var = (labels_column - average_label) ** 2
     
     # 全平方和（TSS）を計算
-    TSS = np.sum(total_var ** 2)
+    TSS = np.sum(total_var * weights)
     
     # R2の計算
     R2 = 1 - RSS / TSS
     
     return RSS, TSS, R2
+
