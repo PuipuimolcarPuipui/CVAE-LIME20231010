@@ -819,7 +819,7 @@ def simple_WSL(X, y, weights):
     
     # 結果のサマリーを表示
     # print(model.summary())
-    print(significant_coeffs)
+    # print(significant_coeffs)
     
     return significant_coeffs
 

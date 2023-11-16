@@ -587,22 +587,25 @@ def AE_load(X_test=None,
         else:
             samples = decoder.predict(latent_vectors, verbose=0)
         
-        # if auto_encoder == 'VAE':
-        #     # 各行間のGower距離を計算
-        #     import gower
-        #     distances = gower.gower_matrix(data_x=latent_vectors, data_y=latent_vector)
-        #     # 1から距離を引く
-        #     distances = 1 - distances
-        #     # distancesが2次元であれば、1次元にリシェープする
-        #     if len(distances.shape) == 2 and distances.shape[1] == 1:
-        #         distances = distances.ravel()    
-        # else:
-        # 距離の計算
-        distances = np.linalg.norm(latent_vectors - latent_vector, axis=1)
-            
-        # 重みの定義
-        weights = np.power(1/ math.e, distances)
-        # weights = np.sqrt(np.exp(-(distances ** 2) / kernel_width ** 2))
+        
+        distance_mertics = 'Gower'
+        
+        if distance_mertics == 'Gower':
+            # 各行間のGower距離を計算
+            import gower
+            distances = gower.gower_matrix(data_x=latent_vectors, data_y=latent_vector)
+            # 1から距離を引く
+            weights = 1 - distances
+            weights = weights.squeeze()
+            # # distancesが2次元であれば、1次元にリシェープする
+            # if len(distances.shape) == 2 and distances.shape[1] == 1:
+            #     distances = distances.ravel()    
+        else:
+            # 距離の計算
+            distances = np.linalg.norm(latent_vectors - latent_vector, axis=1)
+                
+            # 重みの定義
+            weights = np.power(1/ math.e, distances)
         
         
     if auto_encoder_weighting == False:
