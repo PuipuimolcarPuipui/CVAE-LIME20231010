@@ -206,6 +206,8 @@ class LimeTabularExplainer(object):
                         dataset_class_num = auto_encoder_setting['dataset_class_num'],
                         one_hot_encoding = self.auto_encoder_setting['one_hot_encoding'],
                         add_condition = self.auto_encoder_setting['add_condition'],
+                        condition_from_target = self.auto_encoder_setting['condition_from_target'],
+                        target_model = self.auto_encoder_setting['predict_fn']
                         )
 
         # Check and raise proper error in stats are supplied in non-descritized path
@@ -484,7 +486,7 @@ class LimeTabularExplainer(object):
              ret_exp.local_exp[label],
              ret_exp.score, 
              ret_exp.local_pred,
-             ret_exp.Active_latent_dim, ret_exp.significant_coeffs, ret_exp.RSS, ret_exp.TSS, ret_exp.R2) = self.base.explain_instance_with_data(
+             ret_exp.Active_latent_dim, ret_exp.significant_coeffs, ret_exp.RSS, ret_exp.TSS, ret_exp.WRSR, ret_exp.WRSR2, ret_exp.Corr) = self.base.explain_instance_with_data(
                     scaled_data,
                     yss,
                     distances,

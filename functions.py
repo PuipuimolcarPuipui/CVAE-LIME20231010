@@ -862,7 +862,18 @@ def RSS_TSS_fn(easy_model, neighborhood_data, labels_column, weights):
     residuals = labels_column - predictions
     
     # 残差を重みで重み付けする（weightsが指定されている場合）
-    weighted_residuals = residuals ** 2 * weights
+    weighted_residuals = residuals**2 * weights
+    
+    WRSR = np.sum(weighted_residuals) / np.sum(residuals**2)
+    
+    WRSR2 = WRSR / np.mean(weights)
+    
+    # 重みとWRSRの相関係数を確認する
+    import scipy.stats
+    Corr = {}
+    Corr['Peason'] = np.corrcoef(residuals**2, weights)[0, 1]
+    Corr['spearman'], spearman_p_value = scipy.stats.spearmanr(residuals**2, weights)
+    Corr['Kendor'], kendall_p_value = scipy.stats.kendalltau(residuals**2, weights)
     
     # 残差の二乗和（RSS）を計算
     RSS = np.sum(weighted_residuals)
@@ -873,11 +884,150 @@ def RSS_TSS_fn(easy_model, neighborhood_data, labels_column, weights):
     # 実際の値と平均との差（全体の変動）を計算
     total_var = (labels_column - average_label) ** 2
     
+    # 重みのヒストグラム
+    from functions import Histgram
+    Histgram(weights)
+    
+    
     # 全平方和（TSS）を計算
     TSS = np.sum(total_var * weights)
     
     # R2の計算
     R2 = 1 - RSS / TSS
     
-    return RSS, TSS, R2
+    return RSS, TSS, R2, WRSR, WRSR2, Corr
 
+
+def weight_RSS_fn(easy_model, neighborhood_data, labels_column, weights, auto_encoder):
+    import numpy as np
+    import numpy as np
+    import matplotlib.pyplot as plt
+    import os
+    import scipy.stats as stats
+    # モデルを使って予測値を計算
+    predictions = easy_model.predict(neighborhood_data)
+    
+    # 実際の値と予測値の差（残差）を計算
+    residuals = np.abs(labels_column - predictions)
+    # 残差の最頻値（mode）を計算して表示
+    # mode_residuals = stats.mode(residuals)
+    # print(f"Mode of residuals: {mode_residuals.mode[0]} with count: {mode_residuals.count[0]}")
+
+    # 標準偏差を計算    
+    # std_dev = np.std(residuals)
+
+    # 散布図を作成
+    plt.figure()
+    plt.hexbin(residuals, weights, gridsize=50, cmap='Blues')
+    cb = plt.colorbar(label='Sample Num')
+    plt.xlabel('Residuals')
+    plt.ylabel('Weights')
+    plt.title('Hexbin Plot of Residuals vs Weights')
+
+    plt.xlim(-1.5, 1.5)
+    plt.ylim(0, 1)
+    
+
+
+    # plt.savefig(f'save_data/weight_RSS/hexbin_residuals_vs_weights_{auto_encoder}.png')
+    plt.close()
+
+
+# def weight_RSS_fn(easy_model, neighborhood_data, labels_column, weights, auto_encoder):
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+#     import os
+#     # モデルによる予測
+#     predictions = easy_model.predict(neighborhood_data)
+    
+#     # 実際の値と予測値の差（残差）を計算
+#     residuals = np.abs(labels_column - predictions)
+
+#     # 重み付き残差を計算
+#     weighted_residuals = residuals * weights
+
+#     # 重み付き残差のヒストグラムを作成
+#     plt.figure()
+#     plt.hist(weighted_residuals, bins=50, color='blue', alpha=0.7)
+#     plt.xlabel('Weighted_residual')
+#     plt.ylabel('Frequency')
+#     plt.title(f'Histgram - {auto_encoder}')
+#     plt.xlim(0,1)
+#     plt.ylim(0,1000)
+
+#     # ディレクトリが存在するかチェックし、なければ作成
+#     os.makedirs('save_data/weight_RSS', exist_ok=True)
+
+#     # プロットを保存
+#     plt.savefig(f'save_data/weight_RSS/histogram_weighted_residuals_{auto_encoder}.png')
+#     plt.close()
+
+
+# def weight_RSS_fn(easy_model, neighborhood_data, labels_column, weights, auto_encoder):
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+#     import os
+#     from scipy.stats import skew
+#     # モデルによる予測
+#     predictions = easy_model.predict(neighborhood_data)
+    
+#     # 実際の値と予測値の差（残差）を計算
+#     residuals = np.abs(labels_column - predictions)
+
+#     # 重み付き残差を計算
+#     weighted_residuals = residuals * weights
+
+#     # 重み付き残差の歪度を計算
+#     skewness = skew(weighted_residuals)
+
+#     # 重み付き残差のヒストグラムを作成
+#     plt.figure()
+#     plt.hist(weighted_residuals, bins=50, color='blue', alpha=0.7)
+#     plt.xlabel('Weighted_residual')
+#     plt.ylabel('Frequency')
+#     plt.title(f'Histgram - {auto_encoder}')
+#     plt.xlim(0, 1)
+#     plt.ylim(0, 1000)
+
+#     # 歪度の値をタイトルに追加
+#     # plt.suptitle(f'Skewness: {skewness:.2f}', fontsize=10, y=0.92)
+
+#     # ディレクトリが存在するかチェックし、なければ作成
+#     os.makedirs('save_data/weight_RSS', exist_ok=True)
+
+#     # プロットを保存
+#     plt.savefig(f'save_data/weight_RSS/histogram_weighted_residuals_{auto_encoder}.png')
+#     plt.close()
+
+#     # 歪度の値を返す
+#     print(skewness)
+
+
+def Histgram(data):
+    import matplotlib.pyplot as plt
+    import numpy as np
+    plt.hist(data, bins=30, alpha=0.7, label='A')
+    plt.title('Weight Frequency (Adult Dataset:LIME)')
+    plt.xlabel('Weight')
+    plt.ylabel('Frequency')
+
+    # 統計量の計算
+    mean_value = np.mean(data)
+    median_value = np.median(data)
+    std_deviation = np.std(data)
+    min_value = np.amin(data)
+    max_value = np.amax(data)
+    total = np.sum(data)
+    count = data.size
+
+    # 統計量のテキストを設定
+    stats_text = f"Mean: {mean_value:.2f}\nMedian: {median_value:.2f}\nStd: {std_deviation:.2f}\nMin: {min_value:.2f}\nMax: {max_value:.2f}\nTotal: {total:.2f}\nCount: {count:.2f}"
+
+    # 統計量のテキストをグラフに追加
+    plt.text(0.05, 0.95, stats_text, transform=plt.gca().transAxes, verticalalignment='top')
+
+    plt.xlim(0, 1)
+    plt.ylim(0, 1000)
+
+    # plt.savefig('save_data/histgram.png')
+    plt.close()

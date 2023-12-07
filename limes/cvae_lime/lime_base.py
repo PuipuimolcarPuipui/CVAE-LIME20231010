@@ -235,6 +235,7 @@ class LimeBase(object):
                                     kernel_width= self.auto_encoder_setting['kernel_width'],
                                     VAR_threshold = self.auto_encoder_setting['VAR_threshold'],
                                     add_condition = self.auto_encoder_setting['add_condition'],
+                                    distance_mertics = self.auto_encoder_setting['distance_mertics'],
                                     )
         
         #　ラベルによるフィルタリング
@@ -290,8 +291,12 @@ class LimeBase(object):
         
         # RSSの計算
         from functions import RSS_TSS_fn
-        RSS, TSS, R2 = RSS_TSS_fn(easy_model, neighborhood_data[:, used_features], labels_column, weights)
+        RSS, TSS, R2, WRSR, WRSR2, Corr = RSS_TSS_fn(easy_model, neighborhood_data[:, used_features], labels_column, weights)
 
+        # weightとRSSの関係をプロット
+        from functions import weight_RSS_fn
+        weight_RSS_fn(easy_model, neighborhood_data, labels_column, weights, self.auto_encoder_setting['auto_encoder'])
+        
         # 単純な重み付き線形モデルとして評価する
         from functions import simple_WSL
         significant_coeffs = simple_WSL(neighborhood_data[:, used_features], labels_column, weights)
@@ -303,4 +308,4 @@ class LimeBase(object):
         return (easy_model.intercept_,
                 sorted(zip(used_features, easy_model.coef_),
                        key=lambda x: np.abs(x[1]), reverse=True),
-                prediction_score, local_pred, Active_latent_dim, significant_coeffs, RSS, TSS, R2)
+                prediction_score, local_pred, Active_latent_dim, significant_coeffs, RSS, TSS, WRSR, WRSR2, Corr)

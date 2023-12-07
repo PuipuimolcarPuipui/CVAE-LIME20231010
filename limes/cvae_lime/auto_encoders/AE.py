@@ -25,7 +25,9 @@ def AE_training(X_train=None,
             dataset_class_num=None,
             one_hot_encoding=None,
             verbose=1,
-            add_condition=None
+            add_condition=None,
+            condition_from_target=None,
+            target_model=None,
             ):
     import sys
     sys.path.append('/home/CVAE-LIME20230902')
@@ -246,17 +248,24 @@ def AE_training(X_train=None,
             y_train = np.concatenate((y_train.to_numpy().reshape(-1, 1), X_train[:,add_condition]), axis=1)
             y_valid = np.concatenate((y_valid.to_numpy().reshape(-1, 1), X_valid[:,add_condition]), axis=1)
             y_test = np.concatenate((y_test.to_numpy().reshape(-1, 1), X_test.iloc[:, add_condition]), axis=1)
-            
+        
+        # 条件ベクトルを説明対象モデルの出力にする
+        if condition_from_target != "":
+            import numpy as np
+            y_train = np.argmax(target_model(X_train), axis=1)
+            y_valid = np.argmax(target_model(X_valid), axis=1)
+            y_test  = np.argmax(target_model(X_test), axis=1)
+        
         history = vae.fit([X_train, y_train], None, shuffle=True, epochs=epochs, batch_size=16, validation_data=([X_valid, y_valid], None), verbose=verbose)
 
-        encoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_encoder_dim{latent_dim}_epoch{epochs}{add_condition}.keras')
+        encoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_encoder_dim{latent_dim}_epoch{epochs}{add_condition}{condition_from_target}.keras')
 
         decoder_input_dim = latent_dim + condition_dim
         decoder_input = Input(shape=(decoder_input_dim,))
         _h_decoded = decoder_h(decoder_input)
         _x_decoded_mean = decoder_mean(_h_decoded)
         decoder = Model(decoder_input, _x_decoded_mean)
-        decoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_decoder_dim{latent_dim}_epoch{epochs}{add_condition}.keras')
+        decoder.save(f'save_data/auto_encoder_model/model/{auto_encoder}_{dataset}_decoder_dim{latent_dim}_epoch{epochs}{add_condition}{condition_from_target}.keras')
         
         X_test_reconstructed = vae.predict([X_test, y_test], verbose=verbose)
         reconstruction_mse = np.mean(np.power(X_test - X_test_reconstructed, 2), axis=1)
@@ -495,7 +504,8 @@ def AE_load(X_test=None,
         noise_std=None,
         kernel_width=None,
         VAR_threshold=None,
-        add_condition=None
+        add_condition=None,
+        distance_mertics=None,
         ):
     '''
     X_test:説明対象のインスタンス
@@ -531,8 +541,9 @@ def AE_load(X_test=None,
         # 距離の計算
         distances = np.linalg.norm(latent_vectors - latent_vector, axis=1)
         # 重みの定義
-        weights = np.power(1/ math.e, distances)
-        # weights = np.sqrt(np.exp(-(distances ** 2) / kernel_width ** 2))
+        # weights = np.power(1/ math.e, distances*100)
+        # kernel_width = 0.00005 #np.sqrt(X_test.shape[1]) * .75
+        # weights = np.sqrt(np.exp(-(distances ** 4) / kernel_width ** 4))
     
         
     # 重み付けとサンプル生成を行う場合
@@ -568,6 +579,7 @@ def AE_load(X_test=None,
             
         # 5000個のノイズを加えた潜在ベクトルを作成
         noise = np.random.normal(loc=0, scale=noise_std, size=(num_samples, *latent_vector.shape))
+        # noise = np.random.uniform(low=-1, high=1, size=(num_samples, *latent_vector.shape))
         latent_vectors = np.squeeze(latent_vector + noise)
         # samplesを定義
         # CVAEの場合
@@ -588,7 +600,7 @@ def AE_load(X_test=None,
             samples = decoder.predict(latent_vectors, verbose=0)
         
         
-        distance_mertics = 'Gower'
+        
         
         if distance_mertics == 'Gower':
             # 各行間のGower距離を計算
@@ -605,7 +617,8 @@ def AE_load(X_test=None,
             distances = np.linalg.norm(latent_vectors - latent_vector, axis=1)
                 
             # 重みの定義
-            weights = np.power(1/ math.e, distances)
+            weights = np.sqrt(np.power(1/ math.e, (distances**2)/(np.sqrt(len(X_test)) * .75)))
+            # weights = np.sqrt(np.power(1/ math.e, (distances**2)/0.5))
         
         
     if auto_encoder_weighting == False:

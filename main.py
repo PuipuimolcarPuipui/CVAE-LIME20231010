@@ -42,7 +42,7 @@ auto_encoder_weighting = True
 auto_encoder_sampling = True
 auto_encoder_training = False
 auto_encoder_epochs = 100 if dataset == 'MNIST' else 1000
-auto_encoder_latent_dim = [2,4,6][k]
+auto_encoder_latent_dim = [6,10][k]
 one_hot_encoding = False
 feature_selection = 'auto'
 model_regressor = None
@@ -66,6 +66,12 @@ var_threshold = 0.5
 
 #条件ベクトルに入力ベクトルを追加
 add_condition = ""#[0,1,2,3,4,5] #[0,1,2,3,4,5,6,7,8,9,10] #[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] #Noneの時は条件ベクトルなし, 条件ベクトルのコラム番号を指定
+
+#距離計算方法
+distance_mertics = 'None' #NoneならEuclid
+
+#条件ベクトルへの入力を説明対象モデルの出力クラスに変更 #""ならデータセットのラベルを学習する．
+condition_from_target = "" # True
 
 def main(dataset,
         dataset_class_num,
@@ -155,7 +161,7 @@ def main(dataset,
         original_model = None
 
     ## 実験結果格納用のCSVを定義
-    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','','','','','']],
+    df = pd.DataFrame([['','','','','','','','','','','','','','','','','','','','','','','','','','']],
                         columns=['dataset',
                                 'weighting_fn',
                                 'epoch_num',
@@ -177,7 +183,11 @@ def main(dataset,
                                 'L2',
                                 'RSS',
                                 'TSS',
-                                'R2'])
+                                'WRSR',
+                                'WRSR2',
+                                'Peason',
+                                'spearman',
+                                'Kendor'])
     output_path = 'save_data/test_result/turb_'+str(auto_encoder_sampling)+'_filter_'+str(label_filter)+'_'+str(dataset)+'_'+str(auto_encoder)+'_'+str(auto_encoder_latent_dim)+'_'+str(select_percent)+'_'+str(target_model)+str(add_condition)+'.csv'
     df.to_csv(output_path)
     
@@ -241,7 +251,9 @@ def main(dataset,
                                 'noise_std':noise_std,
                                 'kernel_width':kernel_width,
                                 'VAR_threshold':var_threshold,
-                                'add_condition':add_condition                                                            
+                                'add_condition':add_condition,
+                                'condition_from_target':condition_from_target,
+                                'distance_mertics':distance_mertics,
                                 }
         explainer = LimeTabularExplainer(X_train.values, 
                                         mode=['regression' if dataset_class_num[dataset]=='numerous' else 'classification'][0], 
@@ -326,8 +338,13 @@ def main(dataset,
                             L2,
                             exp.RSS,
                             exp.TSS,
-                            exp.R2]],
-                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim','L1','L2','RSS','TSS','R2'])
+                            exp.WRSR,
+                            exp.WRSR2,
+                            exp.Corr['Peason'],
+                            exp.Corr['spearman'],
+                            exp.Corr['Kendor']
+                            ]],
+                            columns=['dataset', 'weighting_fn', 'epoch_num', 'latent_size', 'num_samples','select_percent','instance_no','predict_label','label', 'r2', 'mse','element1','element3','process_time','target_model','local_output','Active_latent_dim','auto_encoder_latent_dim','L1','L2','RSS','TSS','WRSR','WRSR2', 'Peason', 'spearman', 'Kendor'])
         temp = temp.astype({col: 'int' for col in temp.columns if temp[col].dtype == 'bool'})
         df = pd.concat([df, temp], axis=0)
         df.to_csv(output_path)

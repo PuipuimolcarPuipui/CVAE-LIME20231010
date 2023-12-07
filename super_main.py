@@ -78,28 +78,19 @@ if __name__ == '__main__':
     
     import itertools
 
-    # def super_main(DATA, target, AE, k):
-    #     # ここに実験のコードを入れます
-    #     print(f"実行中: DATA={DATA}, target={target}, AE={AE}, k={k}")
-
-    # 各リストを定義
-    # オートエンコーダ系でMNIST以外 72
-    # DATA = [0,1,2,3,4]
-    # target = [0,1,2]
-    # AE = [0,1]
-    # k = [2,4,6]
-    
-    # # LIMEでMNIST以外 15
-    # DATA = [0,1,2,3,4]
-    # target = [0,1,2]
-    # AE = [2]
-    # k = [0]
-    
-    # # オートエンコーダ系でMNIST 42
-    DATA = [5]
+   
+    # 表形式45
+    DATA = [0,1,2,3,4] #5
     target = [0,1,2]
-    AE = [0,1]
-    k = [2,4,6,7,8,10,12]
+    AE = [0,1,2] #0,1
+    k = [6] #6,8,10
+    
+    # MNIST6
+    # DATA = [5]
+    # target = [0,1,2]
+    # AE = [0,1] 
+    # k = [10]
+    
 
     # 実行したい実験の番号を指定
     import sys
